@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	<display-name>Simple</display-name>
+
+	<servlet>
+		<description>Receives File from mime/multipart POST and parses all hrefs from it into database</description>
+		<display-name>UploadServlet</display-name>
+		<servlet-name>UploadServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.UploadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UploadServlet</servlet-name>
+		<url-pattern>/upload</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<description>Selects a file</description>
+		<servlet-name>SelectFileServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.PostFileForm</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SelectFileServlet</servlet-name>
+		<url-pattern>/select</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<description>Displays a Page of Bookmarks</description>
+		<servlet-name>SelectPageServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.SelectPage</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SelectPageServlet</servlet-name>
+		<url-pattern>/page</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<description>Displays all Bookmarks on a page</description>
+		<servlet-name>SelectLinxServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.SelectLinx</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SelectLinxServlet</servlet-name>
+		<url-pattern>/links</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<description>Displays all Bookmarks on a page behind Access Control Filter</description>
+		<servlet-name>PrivateLinxServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.PrivateLinx</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>PrivateLinxServlet</servlet-name>
+		<url-pattern>/plinks</url-pattern>
+	</servlet-mapping>
+	<!-- servlet-mapping> <servlet-name>SelectLinxServlet</servlet-name> <url-pattern>/edit</url-pattern> 
+		</servlet-mapping -->
+
+	<servlet>
+		<description>Edit page</description>
+		<servlet-name>EditPageServlet</servlet-name>
+		<servlet-class>com.fmt.bookmark.servlet.EditLink</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>EditPageServlet</servlet-name>
+		<url-pattern>/edit</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<description>Security</description>
+		<servlet-name>j_security_check</servlet-name>
+		<servlet-class>com.fmt.password.Secure</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>j_security_check</servlet-name>
+		<url-pattern>/login</url-pattern>
+	</servlet-mapping>
+
+	<!-- Access Control Filter -->
+	<filter>
+		<filter-name>AccessControlFilter</filter-name>
+		<filter-class>com.fmt.password.AccessControlFilter</filter-class>
+		<init-param>
+			<param-name>test-param</param-name>
+			<param-value>This parameter is for testing.</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>AccessControlFilter</filter-name>
+		<url-pattern>/page/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>AccessControlFilter</filter-name>
+		<url-pattern>/links/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>CorsFilter</filter-name>
+		<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+		<init-param>
+			<param-name>cors.allowed.origins</param-name>
+			<param-value>*</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.allowed.methods</param-name>
+			<param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.allowed.headers</param-name>
+			<param-value>Content-Type,X-Requested-With,accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.exposed.headers</param-name>
+			<param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.support.credentials</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.preflight.maxage</param-name>
+			<param-value>10</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>CorsFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Jersey REST-WS -->
+	<servlet>
+		<servlet-name>jersey-serlvet</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.fmt.rest.service</param-value>
+		</init-param>
+		<init-param>
+			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>jersey-serlvet</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Security <Realm name="MyUserDatabase" resourceName="MyUserDatabase" 
+		className="org.apache.catalina.realm.JDBCRealm" debug="99" driverName="com.mysql.jdbc.Driver" 
+		connectionURL="jdbc:postgres://dhjxmgwllqrxiy:jHAlfUz0r_9gGBie7hPksPVpWn@ec2-54-235-245-180.compute-1.amazonaws.com:5432/dbgj0tjogthpr8" 
+		connectionName="dailybalan-800" connectionPassword="a1eae99c8c474eeab4d53bc02ceb6820" 
+		userTable="users" userNameCol="user_name" userCredCol="user_pass" userRoleTable="user_roles" 
+		roleNameCol="role_name" /> <login-config> <auth-method>FORM</auth-method> 
+		<realm-name>MyUserDatabase</realm-name> <form-login-config> <form-login-page>/page/</form-login-page> 
+		<form-error-page>/fail-login.jsp</form-error-page> </form-login-config> </login-config> 
+		<servlet-mapping> <servlet-name>secure</servlet-name> <url-pattern>/j_security_check</url-pattern> 
+		</servlet-mapping> <servlet> <servlet-name>secure</servlet-name> <servlet-class>com.fmt.bookmark.servlet.Secure</servlet-class> 
+		</servlet> <filter> <description>This filter is executed after login</description> 
+		<filter-name>PostLoginFilter</filter-name> <filter-class>PostLoginFilter</filter-class> 
+		</filter> <filter-mapping> <filter-name>PostLoginFilter</filter-name> <url-pattern>/j_security_check</url-pattern> 
+		</filter-mapping> <security-role> <role-name>manager</role-name> </security-role> 
+		<security-constraint> <web-resource-collection> <web-resource-name>AdminPages</web-resource-name> 
+		<description> accessible by authorised users </description> <url-pattern>/page/*</url-pattern> 
+		<http-method>GET</http-method> </web-resource-collection> <auth-constraint> 
+		<description>These are the roles who have access</description> <role-name>manager</role-name> 
+		</auth-constraint> </security-constraint -->
+</web-app>

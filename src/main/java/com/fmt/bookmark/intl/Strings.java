@@ -1,0 +1,75 @@
+package com.fmt.bookmark.intl;
+
+public class Strings {
+	public static String Name = "Name";
+	public static String LinkURL = "LinkURL";
+	public static String Delete = "Delete";
+	public static String Add = "Add";
+	public static String LinkPages = "LinkPages";
+	public static String Links = "Links";
+	public static String Edit= "Edit";
+	public static String click= "click";
+	public static String toAddPage= "to Add Bookmarks Page";
+	public static String seeorbookmark= "See, <b>Bookmark</b>, Share or download your bookmarks page with these links in";
+	public static String youreditor= "Your Bookmarks Page Editor:";
+	public static String versions= "versions";
+	public static String backtopages= "Back to Pages";
+	public static String trapese= "trapeze";
+	public static String blocks= "blocks";
+	public static String straight= "straight";
+	public static String nousernamegiven= "No username param given in URL";
+	public static String openall= "open all";
+	public static String enterPassword= "Enter Password";
+	public static String editthispage= "edit this page";
+	public static String badSite ="badSite";
+	public static String badPassword ="badPassword";
+	public static String badUsername ="badUsername";
+	public static String nullSession ="session is null";
+	public static String noDB ="No Database Connection";
+	public static String unkErr ="Unknown Error.  Try Again.";
+	public static String username= "username";
+	public static String incorrectPass= "Incorrect Password for username";
+	public static String nousername= "no username";
+	public static String definedfor= "defined for site";
+	public static String accountnot= "account not created for site";
+	public static String site="site";
+	public static String invaliduser="Invalid User";
+	public static String pleaselogin="Please Login at";
+	
+	public static void Spanish() {
+		Name = "Name";
+		LinkURL = "LinkURL";
+		Delete = "Delete";
+		Add = "Add";
+		LinkPages = "LinkPages";
+		Links = "Links";
+		Edit= "Edit";
+		click= "click";
+		toAddPage= "to Add Bookmarks Page";
+		seeorbookmark= "See, <b>Bookmark</b>, Share or download your bookmarks page with these links in";
+		youreditor= "Your Bookmarks Page Editor:";
+		versions= "versions";
+		backtopages= "Back to Pages";
+		trapese= "trapeze";
+		blocks= "blocks";
+		straight= "straight";
+		nousernamegiven= "No username param given in URL";
+		openall= "open all";
+		enterPassword= "Enter Password";
+		editthispage= "edit this page";
+		badSite ="badSite";
+		badPassword ="badPassword";
+		badUsername ="badUsername";
+		nullSession ="session is null";
+		noDB ="No Database Connection";
+		unkErr ="Unknown Error.  Try Again.";
+		username= "username";
+		incorrectPass= "Incorrect Password for username";
+		nousername= "no username";
+		definedfor= "defined for site";
+		accountnot= "account not created for site";
+		site="site";
+		invaliduser="Invalid User";
+		pleaselogin="Please Login at";
+	}
+}

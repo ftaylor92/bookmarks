@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- create account form page -->
+<html>
+<head>
+
+ 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=0.75">
+	<title>Create Account</title>	
+	<link rel="stylesheet" href="./jquery/jquery.mobile.css" />
+	<!-- script src="./jquery/jquery.js"></script>
+	<script src="./jquery/jquery.mobile.js"></script>
+
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.css" />
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.js"></script>
+
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/latest/jquery.mobile.min.css" />
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="http://code.jquery.com/mobile/latest/jquery.mobile.min.js"></script>
+
+	<script src="./edit.js"></script> -->
+</head>
+<body>
+ <form action="http://password.fmtmac.cloudbees.net/rest/password" method="POST">
+ <label for="username">Username</label>
+ <input name="username" id="username" class="username" />
+ <br/>
+ <label for="password">Password</label>
+ <input name="password" id="password" class="password"/>
+ <br/>
+<input type="hidden" name="site" value="com.fmt.bookmarks" />
+<input type="hidden" name="role" value="user" />
+ <br/>
+ <div class="accountFeedback"></div>
+ <br/>
+ <input type="submit" value="Create Account" />
+<!-- button style="width: 150px;" data-inline="true" onclick="createAccount($('input:text[name=username]').val(),$('input:text[name=password]').val());return false;">Create Account</button -->
+ </form>
+  (Once Account is created, Hit Back-Arrow on Browser twice to login in with your Username and Password)<br/>
+
+</body>
+</html>

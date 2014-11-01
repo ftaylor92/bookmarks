@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>File Upload</title>
+</head>
+<body>
+	Select URL to import links from: <input type="text" id=""uploadUrl"" class=""uploadUrl"" name="uploadUrl" />
+	<button data-inline="true" onclick="var nurl=escape($('input:text[name=uploadUrl]').val());window.location.replace('./page?user=ftaylor92&page=x&action=IMPORTPAGE&import='+nurl);" >Import URL</button>
+	<!-- button data-inline="true" onclick="window.location.replace('./links?edit=true&user='+username+'&page='+pageName+'&action='+action+'&link_url='+link_url+'&link_name='+link_name+'&paragraph_name='+paragraphName+'&oldPageName='+pageName+'&paragraph_pos='+paragraphPosition+'&link_pos='+linkPosition" / -->			
+	<br/>--or--<br/>
+	<form method="POST" action="http://fmtmac-bookmarks.herokuapp.com/upload" enctype="multipart/form-data">
+		<!-- input type="hidden" name="username" value="ftaylor92" / -->
+		Select file to upload: <input type="file" name="uploadFile" />
+		<br/>
+		<input type="submit" value="Upload" />
+	</form>
+</body>
+</html>
