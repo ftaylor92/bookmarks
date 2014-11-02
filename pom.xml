@@ -106,7 +106,7 @@
 
 	</dependencies>
 	<build>
-		<finalName>bookmarks</finalName>
+		<finalName>fmt-bookmarks</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
