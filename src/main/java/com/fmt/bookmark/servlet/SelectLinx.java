@@ -3,10 +3,6 @@ package com.fmt.bookmark.servlet;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -14,11 +10,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import com.fmt.bookmark.intl.Strings;
-import com.fmt.bookmark.orm.BookmarkTable;
-import com.fmt.bookmark.orm.BookmarkTable.Link;
-import com.fmt.bookmark.orm.BookmarkTable.Paragraph;
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.bookmark.orm.BookmarkPage;
+import com.fmt.bookmark.orm.BookmarkPage.Link;
+import com.fmt.bookmark.orm.BookmarkPage.Paragraph;
+import com.fmt.database.HerokuConnection;
 import com.fmt.rest.service.BookmarkDatabase;
 
 /**
@@ -34,12 +32,28 @@ public class SelectLinx extends HttpServlet {
 	 * @param pageName name of page to get paragraphs from
 	 * @return list of paragraph names in user's account
 	 **/
-	public BookmarkTable queryForParagraphs(String user, String pageName) {
-		BookmarkTable table= new BookmarkTable();
-		System.out.printf("SELECT paragraph_name, paragraph_position, link_name, link, position FROM bookmark_linx WHERE user=%s AND page_name=%s ORDER BY paragraph_position, position;\n", user, pageName);
+	public static BookmarkPage queryForParagraphs(String user, String pageName) {
+		final JdbcTemplate springPg= HerokuConnection.getSpringConnection();
+		
+		final BookmarkPage table= new BookmarkPage();
+		table.name= pageName;
+		
+		final int dbPageId= springPg.queryForObject("SELECT id FROM bookmark_page WHERE user_id=(SELECT id FROM rest_users WHERE user_name=? AND site_name=?) AND page_name=?", new Object[]{user, "com.fmt.bookmarks", pageName}, Integer.class);
+		
+		List<Integer> paragraphIds= springPg.query("SELECT id from bookmark_paragraphs WHERE page_id=? ORDER BY position ASC", new Object[]{dbPageId}, (row, rowNum) -> row.getInt("id"));
+
+		paragraphIds.forEach(pgId -> {
+			final Paragraph pgPara= springPg.queryForObject("SELECT * FROM bookmark_paragraphs WHERE id=? ORDER BY position ASC", new Object[]{pgId}, (row, pgn) -> new BookmarkPage.Paragraph(row.getInt("id"), row.getInt("position"), row.getString("name")));
+
+			springPg.query("SELECT * FROM bookmark_linx WHERE paragraph_id=? ORDER BY position ASC", new Object[]{pgId}, (row, rowNum) -> new Link(row.getInt("position"), row.getString("link_url"), row.getString("name"))).forEach(ln -> {
+				pgPara.linx.add(ln);
+			});
+
+			table.paragraphs.add(pgPara);
+		});
+		/*System.out.printf("SELECT paragraph_name, paragraph_position, link_name, link, position FROM bookmark_linx WHERE user=%s AND page_name=%s ORDER BY paragraph_position, position;\n", user, pageName);
 		final String sqlLinx= "SELECT paragraph_name, paragraph_position, link_name, link, position FROM bookmark_linx WHERE user=? AND page_name=? ORDER BY paragraph_position, position;";
 
-		List<String> tables= new ArrayList<String>();
 		try {
 			// Statements allow to issue SQL queries to the database
 			//sParagraph= connection.prepareStatement(sqlParagraphs);
@@ -58,7 +72,7 @@ public class SelectLinx extends HttpServlet {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			tables.add(e.getMessage());
-		}
+		}*/
 
 		return table;
 	}
@@ -102,7 +116,7 @@ public class SelectLinx extends HttpServlet {
 		if(null == pagename || pagename.length() == 0) {
 			html+= Strings.nousernamegiven+ "<br/>\n";
 		} else {
-			BookmarkTable table= queryForParagraphs(username, pagename);
+			BookmarkPage table= queryForParagraphs(username, pagename);
 			System.out.println("table.paragraphs.size(): "+ table.paragraphs.size());
 			if(blocks) html+= "<table width=\"100%\" cellpadding=\"10\">\n";	// border=\"1\"
 			for(Paragraph paragraph : table.paragraphs) {
@@ -268,7 +282,7 @@ public class SelectLinx extends HttpServlet {
 	        	} else if(!role.contains("user")) {
 	        		message+= ", role is "+ role;
 	        	}
-				response.getWriter().write(String.format("Invalid User, %s\n\nPlease Login at http://fmtmac-bookmarks.herokuapp.com", message.replaceAll(", ,", ",")));
+				response.getWriter().write(String.format("Invalid User, %s\n\nPlease Login at https://fmt-bookmarks.herokuapp.com", message.replaceAll(", ,", ",")));
 				return;
 			}
 		}*/

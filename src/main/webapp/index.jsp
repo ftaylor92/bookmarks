@@ -55,8 +55,8 @@
 	<h4>The Simplest Bookmarking Site Possible</h4>
 <li>Simply Save and Access all Your Bookmarks on Your Web Browser Screen.</li>
 <li>Bookmarks Pages can be <a href="http://localhost:8080/bookmarks/plinks?user=ftaylor92&page=j2ee&edit=false&format=straight&private=false">public</a> links or Private only for you.</li>
-<li>Organize Multiple Pages of Bookmarks.  Organize Links by blocks of &quot;<a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false">Paragraphs</a>&quot;</li>
-<li>Then Display Bookmarks as either <a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false">Straight List</a>, <a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=WS&edit=false&format=trapese&private=false">Trapeze</a> format or as Blocks of Link &quot;<a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=blocks&private=false">Paragraphs</a>&quot;.</li>
+<li>Organize Multiple Pages of Bookmarks.  Organize Links by blocks of &quot;<a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false">Paragraphs</a>&quot;</li>
+<li>Then Display Bookmarks as either <a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false">Straight List</a>, <a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=WS&edit=false&format=trapese&private=false">Trapeze</a> format or as Blocks of Link &quot;<a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=blocks&private=false">Paragraphs</a>&quot;.</li>
 <li>Edit, View, <em>Bookmark</em> and Share Your Bookmarks easily from Site.</li>
 <li>Always <em>Free</em>.  Always <em>Ad-Free</em>.  Always quickly accessible with one click.</li>
 <li>View From any Browser, including Your Mobile Phone</li>
@@ -65,9 +65,9 @@
 If you have any comments or issues, please email me at <a href="mailto:ftaylor92@bc.edu">ftaylor92@bc.edu</a><br/>
 
 <h5>Block, Straight or Trapeze formats</h5>
-<a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=blocks&private=false"><img src="./img/blocks.png" /></a>
-<a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false"><img src="./img/straight.png" /></a>
-<a href="http://fmtmac-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=WS&edit=false&format=trapese&private=false"><img src="./img/trapese.png" /></a><br/>
+<a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=blocks&private=false"><img src="./img/blocks.png" /></a>
+<a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=software&edit=false&format=straight&private=false"><img src="./img/straight.png" /></a>
+<a href="https://fmt-bookmarks.herokuapp.com/plinks?user=ftaylor92&page=WS&edit=false&format=trapese&private=false"><img src="./img/trapese.png" /></a><br/>
 
 <h5>Multiple Pages</h5>
 <img src="./img/pages.png" /><br/>
@@ -78,7 +78,7 @@ If you have any comments or issues, please email me at <a href="mailto:ftaylor92
 	$(document).ready(function() {
 		$.ajaxSetup({ cache: false, contentType: "application/json; charset=utf-8", dataType:"json"});
 
-		var counterUrl="http://fmtmac-bookmarks.herokuapp.com/rest/counter?site="+ encodeURIComponent(window.location.href);
+		var counterUrl="https://fmt-bookmarks.herokuapp.com/rest/counter?site="+ encodeURIComponent(window.location.href);
 		$.get(counterUrl, function(data, txtstatus, xbr) {
 			$("#counter").html("<br/><br/><small><em>count: "+ data+"</em></small>");
 		});

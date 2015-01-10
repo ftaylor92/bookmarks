@@ -1,0 +1,42 @@
+package com.fmt.rest.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+
+import com.fmt.bookmark.orm.BookmarkPage;
+
+@Path("/eight")
+public class EightService {
+	@GET
+	//@HttpMethod("Get")
+	@Produces(MediaType.APPLICATION_JSON)	//MediaType.APPLICATION_JSON
+	public Response getLinx() {
+		Status stat= Response.Status.OK;
+		
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge(60);
+		cc.setNoCache(true);
+		
+		List<BookmarkPage.Link> linx= new ArrayList<>();
+		linx.add(new BookmarkPage.Link(2, "lkName", "lnName"));
+		linx.add(new BookmarkPage.Link(3, "lkName", "lnName"));
+		linx.add(new BookmarkPage.Link(4, "lkName", "lnName"));
+		
+		List<Integer> ints= linx.stream().mapToInt(p -> p.position).boxed().collect(Collectors.toList());
+		
+		ResponseBuilder rb = Response.status(stat).entity(linx);
+		System.out.println("Response: "+ linx.toString());
+		return rb.cacheControl(cc).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods","GET").build();
+	}
+}

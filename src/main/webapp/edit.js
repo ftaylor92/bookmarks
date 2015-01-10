@@ -1,7 +1,7 @@
 //globals
-//var BASE_URL= "http://fmtmac-bookmarks.herokuapp.com"; // "http://localhost:8080/bookmarks";	//
+//var BASE_URL= "https://fmt-bookmarks.herokuapp.com"; // "http://localhost:8080/bookmarks";	//
 var BASE_PASS_URL= "http://password.fmtmac.cloudbees.net"; //"http://localhost:8080/password";
-var BASE_BOOK_URL= "http://fmtmac-bookmarks.herokuapp.com"; //"http://localhost:8080/bookmarks"; //
+var BASE_BOOK_URL= "https://fmt-bookmarks.herokuapp.com"; //"http://localhost:8080/bookmarks"; //
 //var BASE_BOOK_URL="http://localhost:8080/bookmarks"; //
 /*var user= $.urlParam('user');
 var password= $.urlParam('password');

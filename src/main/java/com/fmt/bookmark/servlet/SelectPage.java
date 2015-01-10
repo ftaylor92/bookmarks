@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fmt.bookmark.intl.Strings;
 import com.fmt.bookmark.upload.ImportBookmarks;
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.database.HerokuConnection;
 import com.fmt.rest.service.BookmarkDatabase;
 //import javax.servlet.http.HttpSession;
 
@@ -25,7 +25,7 @@ import com.fmt.rest.service.BookmarkDatabase;
 @SuppressWarnings("serial")
 public class SelectPage extends HttpServlet {
 	
-	final static String BASE_URL= "http://fmtmac-bookmarks.herokuapp.com";//"http://localhost:8080/bookmarks";
+	final static String BASE_URL= "https://fmt-bookmarks.herokuapp.com";//"http://localhost:8080/bookmarks";
 
 	/**
 	 * given a user, return list of pages associated with user's account.
@@ -34,14 +34,15 @@ public class SelectPage extends HttpServlet {
 	 **/
 	public List<String> queryForPages(String username) {
 		System.out.printf("SELECT page_name FROM bookmark_linx WHERE user=%s GROUP BY page_name ORDER BY page_name;\n", username);
-		final String sql= "SELECT page_name FROM bookmark_linx WHERE user=? GROUP BY page_name ORDER BY page_name;";
+		final String sql= "SELECT page_name FROM bookmark_page WHERE user_id=(SELECT id FROM rest_users WHERE user_name=? AND site_name=?) GROUP BY page_name ORDER BY page_name;";
 		
-		List<String> tables= new ArrayList<String>();
+		List<String> tables= new ArrayList<>();//HerokuConnection.getSpringConnection().query(sql, new Object[]{username}, (row,rowNum) -> row.getString("page_name"));
 		try {
 			// Statements allow to issue SQL queries to the database
 			//statement = connection.createStatement();
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, username);
+			preparedStatement.setString(2, "com.fmt.bookmarks");
 			// Result set get the result of the SQL query
 			//resultSet = statement.executeQuery(sql);
 			ResultSet resultSet= preparedStatement.executeQuery();
@@ -53,7 +54,7 @@ public class SelectPage extends HttpServlet {
 			}
 			resultSet.close();
 			preparedStatement.close();
-			CloudbeesConnection.close();
+			HerokuConnection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			tables.add(e.getMessage());

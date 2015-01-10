@@ -1,6 +1,10 @@
 heroku:
 
 java 1.8 52.0 version problem
+
+
+mvn clean package && heroku deploy:war --war target/*.war
+
 ------------------------
 cloudbees:
 
@@ -17,10 +21,10 @@ Testing:
 -Test noedit finished page ceoExpress
 -Test add, move, edit, delete (Page, Paragraph, link)
 
-http://tinyurl.com/simple-bookmarks == http://fmtmac-bookmarks.herokuapp.com
+http://tinyurl.com/simple-bookmarks == https://fmt-bookmarks.herokuapp.com
 see counter.html for adding counter to any HTML page
 
-http://fmtmac-bookmarks.herokuapp.com/page?user=ftaylor92
+https://fmt-bookmarks.herokuapp.com/page?user=ftaylor92
 
 http://localhost:8080/bookmarks
 http://localhost:8080/bookmarks/rest/secure

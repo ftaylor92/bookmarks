@@ -4,6 +4,7 @@ import java.net.URLDecoder;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.database.HerokuConnection;
 
 /** REST-WS interface to bookmark database. **/
 @Path("/data")
@@ -65,10 +66,10 @@ public class BookmarkDatabase {
 					System.out.println("lnPos-post=("+lnPos+")");
 				} catch(NumberFormatException ex) {}
 				if(addLink(user, pageName, paragraphName, Integer.parseInt(paragraphPosition), linkName, linkUrl, lnPos)) {
-					linx= new ArrayList<String>();
+					linx= new ArrayList<>();
 					linx.add("success");
 				} else {
-					linx= new ArrayList<String>();
+					linx= new ArrayList<>();
 					linx.add("fail");
 				}
 			} else if(null == pageName || pageName.isEmpty()) {
@@ -96,13 +97,13 @@ public class BookmarkDatabase {
 	 * @return names of all the pages in user's account
 	**/
 	public List<String> getPageNames(String user) {
-		List<String> pageNames= new ArrayList<String>();
+		final List<String> pageNames= new ArrayList<>();
 		//Add Link
 		System.out.printf("SELECT page_name FROM bookmark_linx WHERE user=%s GROUP BY page_name ORDER BY page_name;\n", user);
 		String sql= "SELECT page_name FROM bookmark_linx WHERE user=? GROUP BY page_name ORDER BY page_name;";
 		
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			ResultSet resultSet= preparedStatement.executeQuery();
 			
@@ -116,7 +117,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return pageNames;
 	}
@@ -128,13 +129,13 @@ public class BookmarkDatabase {
 	 * @return names of all the paragraphs on page
 	**/
 	public List<String> getParagraphNames(String user, String pageName) {
-		List<String> paragraphNames= new ArrayList<String>();
+		List<String> paragraphNames= new ArrayList<>();
 		//Add Link
 		System.out.printf("SELECT paragraph_name, paragraph_position FROM bookmark_linx WHERE user=%s AND page_name=%s GROUP BY paragraph_name ORDER BY paragraph_position;\n", user, pageName);
 		String sql= "SELECT paragraph_name, paragraph_position FROM bookmark_linx WHERE user=? AND page_name=? GROUP BY paragraph_name ORDER BY paragraph_position;";
 		
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			ResultSet resultSet= preparedStatement.executeQuery();
@@ -149,7 +150,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return paragraphNames;
 	}
@@ -161,13 +162,13 @@ public class BookmarkDatabase {
 	 * @return names of all the paragraphs on page
 	**/
 	public List<String> getParagraphLinkNames(String user, String pageName, String paragraphName) {
-		List<String> linkNames= new ArrayList<String>();
+		List<String> linkNames= new ArrayList<>();
 		//Add Link
 		System.out.printf("SELECT link_name FROM bookmark_linx WHERE user='%s' AND page_name='%s' AND paragraph_name='%s' ORDER BY position;\n", user, pageName, paragraphName);
 		String sql= "SELECT link_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_name=? ORDER BY position;";
 		
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setString(3, paragraphName);
@@ -184,7 +185,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return linkNames;
 	}
@@ -197,12 +198,65 @@ public class BookmarkDatabase {
 	public boolean addPage(String user, String pageName) {
 		boolean success= false;
 		
+		try {
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement("INSERT INTO bookmark_page (user_id, page_name) VALUES ((SELECT id FROM rest_users WHERE user_name=? AND site_name=?),?)");
+			preparedStatement.setString(1, user);
+			preparedStatement.setString(2, "com.fmt.bookmarks");
+			preparedStatement.setString(3, pageName);
+			
+			/*preparedStatement.setString(3, "firstParagraph");
+			preparedStatement.setInt(4, 0);
+			preparedStatement.setInt(5, 0);
+			preparedStatement.setString(6, "blankEntry");
+			preparedStatement.setString(7, "");*/
+			success= !preparedStatement.execute();
+			preparedStatement.close();
+			
+			preparedStatement= HerokuConnection.getConnection().prepareStatement("SELECT * FROM bookmark_page WHERE user_id=(SELECT id FROM rest_users WHERE user_name=? AND site_name=?) AND page_name=?");
+			preparedStatement.setString(1, user);
+			preparedStatement.setString(2, "com.fmt.bookmarks");
+			preparedStatement.setString(3, pageName);
+			ResultSet resultSet= preparedStatement.executeQuery();
+			
+			if(resultSet.next()) {
+				final int pageId= resultSet.getInt("id");
+
+				if(addParagraph(user, pageName, "firstParagraph", 1)) {
+					if(addLink(user, pageName, "firstParagraph", 1, "blankEntry", "", 1)) {
+						success= true;
+					}
+				}
+			}
+			
+			resultSet.close();
+			preparedStatement.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
-		System.out.printf("INSERT INTO bookmark_linx(user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (%s, %s, %s, %d, %d, %s, %s)\n", user, pageName, "firstParagraph", 0, 0, "blankEntry", "");
+		Statement statement = null;
+
+		try{
+		    statement = HerokuConnection.getConnection().createStatement();
+
+		    statement.addBatch(String.format("INSERT INTO bookmark_page (user_id, page_name) VALUES ((SELECT id FROM rest_users WHERE user_name='%s' AND site_name='com.fmt.bookmarks')", user, pageName));
+		    statement.addBatch("update people set firstname='Eric' where id=456");
+		    statement.addBatch("update people set firstname='May'  where id=789");
+
+		    int[] recordsAffected = statement.executeBatch();
+		} catch (SQLException ex) {
+		} finally {
+			try {
+			    if(statement != null) statement.close();
+			} catch (SQLException ex) {}
+		}
+		
+		/*System.out.printf("INSERT INTO bookmark_linx(user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (%s, %s, %s, %d, %d, %s, %s)\n", user, pageName, "firstParagraph", 0, 0, "blankEntry", "");
 		final String sql= "INSERT INTO bookmark_linx(user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setString(3, "firstParagraph");
@@ -215,9 +269,9 @@ public class BookmarkDatabase {
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
+		}*/
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -234,7 +288,7 @@ public class BookmarkDatabase {
 		final String sql= "DELETE FROM bookmark_linx WHERE user=? AND page_name=?;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			success= !preparedStatement.execute();
@@ -244,7 +298,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		return success;
 	}
 	
@@ -261,7 +315,7 @@ public class BookmarkDatabase {
 		final String sql= "UPDATE bookmark_linx SET page_name=? WHERE user=? AND page_name=?;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, pageName);
 			preparedStatement.setString(2, user);
 			preparedStatement.setString(3, oldPageName);
@@ -272,7 +326,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -292,7 +346,7 @@ public class BookmarkDatabase {
 		String sql= "SELECT paragraph_position FROM bookmark_linx WHERE user=? AND page_name=? ORDER BY paragraph_position DESC;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			ResultSet resultSet= preparedStatement.executeQuery();
@@ -302,7 +356,7 @@ public class BookmarkDatabase {
 				if(para_pos >= paragraphPosition) {
 					System.out.printf("UPDATE bookmark_linx SET paragraph_position=%d WHERE user=%s AND page_name=%s AND paragraph_position=%s;\n", para_pos+1, user, pageName, para_pos);
 					sql= "UPDATE bookmark_linx SET paragraph_position=? WHERE user=? AND page_name=? AND paragraph_position=?;";
-					PreparedStatement preparedStatement2= CloudbeesConnection.getConnection().prepareStatement(sql);
+					PreparedStatement preparedStatement2= HerokuConnection.getConnection().prepareStatement(sql);
 					preparedStatement2.setInt(1, para_pos+1);
 					preparedStatement2.setString(2, user);
 					preparedStatement2.setString(3, pageName);
@@ -316,7 +370,7 @@ public class BookmarkDatabase {
 			
 			System.out.printf("INSERT INTO bookmark_linx (user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (%s, %s, %s, %d, %d, %s, %s);\n", user, pageName, paragraphName, paragraphPosition, 0, "blankEntry", "");
 			sql= "INSERT INTO bookmark_linx (user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (?, ?, ?, ?, ?, ?, ?);";
-			PreparedStatement preparedStatement3= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement3= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement3.setString(1, user);
 			preparedStatement3.setString(2, pageName);
 			preparedStatement3.setString(3, paragraphName);
@@ -331,7 +385,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return success;
 	}
@@ -354,7 +408,7 @@ public class BookmarkDatabase {
 			linkPosition= 0;
 			
 			try {
-				PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setString(1, user);
 				preparedStatement.setString(2, pageName);
 				preparedStatement.setInt(3, paragraphPosition);
@@ -377,7 +431,7 @@ public class BookmarkDatabase {
 			linkUrl= URLDecoder.decode(linkUrl);
 			
 			try {
-				PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setString(1, user);
 				preparedStatement.setString(2, pageName);
 				preparedStatement.setInt(3, paragraphPosition);
@@ -389,7 +443,7 @@ public class BookmarkDatabase {
 					if(link_pos >= linkPosition) {
 						System.out.printf("UPDATE bookmark_linx SET position=%d WHERE user=%s AND page_name=%s AND paragraph_position=%d AND position=%s;\n", link_pos+1, user, pageName, paragraphPosition, link_pos);
 						sql= "UPDATE bookmark_linx SET position=? WHERE user=? AND page_name=? AND paragraph_position=? AND position=?;";
-						PreparedStatement preparedStatement2= CloudbeesConnection.getConnection().prepareStatement(sql);
+						PreparedStatement preparedStatement2= HerokuConnection.getConnection().prepareStatement(sql);
 						preparedStatement2.setInt(1, link_pos+1);
 						preparedStatement2.setString(2, user);
 						preparedStatement2.setString(3, pageName);
@@ -404,7 +458,7 @@ public class BookmarkDatabase {
 				
 				System.out.printf("INSERT INTO bookmark_linx (user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (%s, %s, %s, %d, %d, %s, %s);\n", user, pageName, paragraphName, paragraphPosition, linkPosition, linkName, linkUrl);
 				sql= "INSERT INTO bookmark_linx (user, page_name, paragraph_name, paragraph_position, position, link_name, link) VALUES (?, ?, ?, ?, ?, ?, ?);";
-				PreparedStatement preparedStatement3= CloudbeesConnection.getConnection().prepareStatement(sql);
+				PreparedStatement preparedStatement3= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement3.setString(1, user);
 				preparedStatement3.setString(2, pageName);
 				preparedStatement3.setString(3, paragraphName);
@@ -419,7 +473,7 @@ public class BookmarkDatabase {
 				e.printStackTrace();
 			}
 			
-			CloudbeesConnection.close();
+			HerokuConnection.close();
 		}
 		return success;
 	}
@@ -437,7 +491,7 @@ public class BookmarkDatabase {
 		final String sql= "DELETE FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position=?;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -448,7 +502,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -467,7 +521,7 @@ public class BookmarkDatabase {
 		final String sql= "DELETE FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position=? AND position=?;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -479,7 +533,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return success;
 	}
@@ -501,7 +555,7 @@ public class BookmarkDatabase {
 		final String sql= "UPDATE bookmark_linx SET paragraph_Name=? WHERE user=? AND page_name=? AND paragraph_position=?;";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, paragraphName);
 			preparedStatement.setString(2, user);
 			preparedStatement.setString(3, pageName);
@@ -513,7 +567,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -536,7 +590,7 @@ public class BookmarkDatabase {
 		linkUrl= URLDecoder.decode(linkUrl);
 		
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, linkName);
 			preparedStatement.setString(2, linkUrl);
 			preparedStatement.setString(3, user);
@@ -550,7 +604,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -577,7 +631,7 @@ public class BookmarkDatabase {
 		String sql= String.format("SELECT paragraph_position, paragraph_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position %s ? ORDER BY paragraph_position %s;", up ? "<" : ">", up ? "DESC" : "ASC");
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -593,7 +647,7 @@ public class BookmarkDatabase {
 			
 			System.out.printf("SELECT paragraph_position, paragraph_name FROM bookmark_linx WHERE user='%s' AND page_name='%s' AND paragraph_position=%d;\n", user, pageName, paragraphPosition);
 			sql= "SELECT paragraph_position, paragraph_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position=?;";
-			preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -609,7 +663,7 @@ public class BookmarkDatabase {
 			if(-1 != pPos1 && -1 != pPos2) {
 				System.out.printf("UPDATE bookmark_linx SET paragraph_position=%d WHERE user=%s AND page_name=%s AND paragraph_position=%d AND paragraph_name=%s;\n", pPos1, user, pageName, paragraphPosition, paragraphName);
 				sql= "UPDATE bookmark_linx SET paragraph_position=? WHERE user=? AND page_name=? AND paragraph_position=? AND paragraph_name=?;";
-				preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setInt(1, pPos1);
 				preparedStatement.setString(2, user);
 				preparedStatement.setString(3, pageName);
@@ -620,7 +674,7 @@ public class BookmarkDatabase {
 				
 				System.out.printf("UPDATE bookmark_linx SET paragraph_position=%d WHERE user=%s AND page_name=%s AND paragraph_position=%d AND paragraph_name=%s;\n", paragraphPosition, user, pageName, pPos1, pName1);
 				sql= "UPDATE bookmark_linx SET paragraph_position=? WHERE user=? AND page_name=? AND paragraph_position=? AND paragraph_name=?;";
-				preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setInt(1, paragraphPosition);
 				preparedStatement.setString(2, user);
 				preparedStatement.setString(3, pageName);
@@ -633,7 +687,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}
@@ -661,7 +715,7 @@ public class BookmarkDatabase {
 		String sql= String.format("SELECT position, link_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position=? AND position %s ? ORDER BY position %s;", left ? "<" : ">", left ? "DESC" : "ASC");
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -678,7 +732,7 @@ public class BookmarkDatabase {
 			
 			System.out.printf("SELECT position, link_name FROM bookmark_linx WHERE user='%s' AND page_name='%s' AND paragraph_position=%d AND position=%d;\n", user, pageName, paragraphPosition, linkPosition);
 			sql= "SELECT position, link_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_position=? AND position=?;";
-			preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setInt(3, paragraphPosition);
@@ -695,7 +749,7 @@ public class BookmarkDatabase {
 			if(-1 != lPos1 && -1 != lPos2) {
 				System.out.printf("UPDATE bookmark_linx SET position=%d WHERE user='%s' AND page_name='%s' AND paragraph_position=%d AND link_name='%s' AND position=%d;\n", lPos1, user, pageName, paragraphPosition, linkName, linkPosition);
 				sql= "UPDATE bookmark_linx SET position=? WHERE user=? AND page_name=? AND paragraph_position=? AND link_name=? AND position=?;";
-				preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setInt(1, lPos1);
 				preparedStatement.setString(2, user);
 				preparedStatement.setString(3, pageName);
@@ -707,7 +761,7 @@ public class BookmarkDatabase {
 				
 				System.out.printf("UPDATE bookmark_linx SET position=%d WHERE user='%s' AND page_name='%s' AND paragraph_position=%d AND link_name='%s' AND position=%d;\n", linkPosition, user, pageName, paragraphPosition, lName1, lPos1);
 				sql= "UPDATE bookmark_linx SET position=? WHERE user=? AND page_name=? AND paragraph_position=? AND link_name=? AND position=?;";
-				preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setInt(1, linkPosition);
 				preparedStatement.setString(2, user);
 				preparedStatement.setString(3, pageName);
@@ -721,7 +775,7 @@ public class BookmarkDatabase {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 		
 		return success;
 	}

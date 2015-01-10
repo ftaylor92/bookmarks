@@ -1,5 +1,4 @@
 package com.fmt.rest.service;
-import java.net.URLDecoder;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.database.HerokuConnection;
 
 /** REST-WS interface to bookmark database. **/
 @Path("/linknames")
@@ -56,7 +55,7 @@ public class BookmarkLinkNames {
 		}
 		
 		if(null == linx) {
-			linx= new ArrayList<String>();
+			linx= new ArrayList<>();
 			linx.add(String.format("failed: username=%s, page=%s", user, pageName));
 		}
 
@@ -72,13 +71,15 @@ public class BookmarkLinkNames {
 	 * @return names of all the paragraphs on page
 	**/
 	public List<String> getParagraphLinkNames(String user, String pageName, String paragraphName) {
-		List<String> linkNames= new ArrayList<String>();
+		List<String> linkNames= new ArrayList<>();
 		//Add Link
 		System.out.printf("SELECT link_name FROM bookmark_linx WHERE user='%s' AND page_name='%s' AND paragraph_name='%s';\n", user, pageName, paragraphName);
 		String sql= "SELECT link_name FROM bookmark_linx WHERE user=? AND page_name=? AND paragraph_name=?;";
 		
+		//linkNames= HerokuConnection.getSpringConnection().query(sql, new Object[]{user, pageName, paragraphName}, (row, nRow) -> row.getString("link_name"));
+		
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, user);
 			preparedStatement.setString(2, pageName);
 			preparedStatement.setString(3, paragraphName);
@@ -95,7 +96,7 @@ public class BookmarkLinkNames {
 			e.printStackTrace();
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 
 		return linkNames;
 	}

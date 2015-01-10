@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.fmt.bookmark.intl.Strings;
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.database.HerokuConnection;
 
 /**
  * Security servlet.
@@ -37,7 +37,7 @@ public class Secure extends HttpServlet {
 		final String sql= "SELECT role_name, password, site_name FROM rest_users WHERE user_name=?";
 
 		try {
-			PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+			PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 			preparedStatement.setString(1, username);
 			ResultSet resultSet= preparedStatement.executeQuery();
 			
@@ -87,7 +87,7 @@ public class Secure extends HttpServlet {
 			throw new IOException(Strings.noDB);
 		}
 		
-		CloudbeesConnection.close();
+		HerokuConnection.close();
 	}
 	
 	@Override

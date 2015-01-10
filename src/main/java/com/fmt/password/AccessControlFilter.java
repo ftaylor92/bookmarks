@@ -62,7 +62,7 @@ public class AccessControlFilter implements Filter {
 					} else if(!role.contains("user")) {
 						message+= ", role == "+ role;
 					}
-					res.getWriter().write(String.format(Strings.invaliduser+ ", %s\n\n"+Strings.pleaselogin+" http://fmtmac-bookmarks.herokuapp.com", message).replaceAll(", ,", ","));
+					res.getWriter().write(String.format(Strings.invaliduser+ ", %s\n\n"+Strings.pleaselogin+" https://fmt-bookmarks.herokuapp.com", message).replaceAll(", ,", ","));
 				} else {
 					chain.doFilter(req, res);
 				}

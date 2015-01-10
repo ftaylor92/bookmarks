@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import com.fmt.database.CloudbeesConnection;
+import com.fmt.database.HerokuConnection;
 
 /** counter for how many hits this page gets. **/
 @Path("/counter")
@@ -53,9 +53,9 @@ public class Counter {
 			System.out.printf("SELECT site, count FROM counter WHERE site='%s';\n", site);
 			String sql= "SELECT site, count FROM counter WHERE site=?;";
 	
-			CloudbeesConnection.getConnection();
+			HerokuConnection.getConnection();
 			try {
-				PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+				PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 				preparedStatement.setString(1, site);
 				ResultSet resultSet= preparedStatement.executeQuery();
 				
@@ -75,7 +75,7 @@ public class Counter {
 				sql= "INSERT INTO counter (site, count) VALUES (?, ?);";
 				
 				try {
-					PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+					PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 					preparedStatement.setString(1, site);
 					preparedStatement.setInt(2, 1);
 					success= !preparedStatement.execute();
@@ -90,7 +90,7 @@ public class Counter {
 				sql= "UPDATE counter SET count=? WHERE site=?;";
 				
 				try {
-					PreparedStatement preparedStatement= CloudbeesConnection.getConnection().prepareStatement(sql);
+					PreparedStatement preparedStatement= HerokuConnection.getConnection().prepareStatement(sql);
 					preparedStatement.setInt(1, count);
 					preparedStatement.setString(2, site);
 					success= !preparedStatement.execute();
@@ -101,7 +101,7 @@ public class Counter {
 				}
 			}
 			
-			CloudbeesConnection.close();
+			HerokuConnection.close();
 		} else {
 			count= -2;
 		}
